@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart' as sql;
 
 class SQLHelper {
@@ -7,12 +9,14 @@ class SQLHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         name TEXT,
         calories INTEGER,
+        firestore TEXT,
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
       """);
     await database.execute("""CREATE TABLE water(
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 ml INTEGER,
+                 firestore TEXT,
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
       """);
@@ -32,10 +36,20 @@ class SQLHelper {
   }
 
   // Create new item (Meal)
-  static Future<int> createMeal(String name, int calories) async {
+  static Future<int> createMeal(String name, int calories,String Firestore) async {
     final db = await SQLHelper.db();
 
-    final data = {'name': name, 'calories': calories};
+    final data = {'name': name, 'calories': calories,'firestore':Firestore};
+    final id = await db.insert('meals', data,
+        conflictAlgorithm: sql.ConflictAlgorithm.replace);
+    return id;
+  }
+  static Future<int> createMealWithDate(String name, int calories,Timestamp createdAt,String Firestore) async {
+    final db = await SQLHelper.db();
+    var dt =  createdAt.toDate();
+    var formatter = new DateFormat('yyyy-MM-dd HH:mm:ss');
+    String formatted = formatter.format(dt);
+    final data = {'name': name, 'calories': calories,'createdAt':formatted,'firestore':Firestore};
     final id = await db.insert('meals', data,
         conflictAlgorithm: sql.ConflictAlgorithm.replace);
     return id;
@@ -46,6 +60,10 @@ class SQLHelper {
     final db = await SQLHelper.db();
     return db.query('meals',where: "createdAt BETWEEN  ? and ?", whereArgs: [date.toString(),date2.toString()], orderBy: "id");
   }
+  static Future<List<Map<String, dynamic>>> getAllMeals() async {
+    final db = await SQLHelper.db();
+    return db.query('meals', orderBy: "id");
+  }
 
   // Read a single item by id
   // The app doesn't use this method but I put here in case you want to see it
@@ -53,15 +71,20 @@ class SQLHelper {
     final db = await SQLHelper.db();
     return db.query('meals', where: "id = ?", whereArgs: [id], limit: 1);
   }
+  static Future<List<Map<String, dynamic>>> getMealNotSynced() async {
+    final db = await SQLHelper.db();
+    return db.query('meals', where: "firestore = ?", whereArgs: ['N'], limit: 1);
+  }
 
   // Update an item by id
   static Future<int> updateMeal(
-      int id, String name, int calories) async {
+      int id, String name, int calories,String Firestore) async {
     final db = await SQLHelper.db();
 
     final data = {
       'name': name,
       'calories': calories,
+    'firestore':Firestore,
      // 'createdAt': DateTime.now().toString()
     };
 
@@ -79,14 +102,21 @@ class SQLHelper {
       debugPrint("Something went wrong when deleting an item: $err");
     }
   }
-
+  static Future<void> deleteAllMeals() async {
+    final db = await SQLHelper.db();
+    try {
+      await db.delete("meals");
+    } catch (err) {
+      debugPrint("Something went wrong when deleting an item: $err");
+    }
+  }
 
 
   // Create new item (Water)
-  static Future<int> createWater(int ml) async {
+  static Future<int> createWater(int ml,String Firestore) async {
     final db = await SQLHelper.db();
 
-    final data = {'ml': ml};
+    final data = {'ml': ml,'firestore':Firestore};
     final id = await db.insert('water', data,
         conflictAlgorithm: sql.ConflictAlgorithm.replace);
     return id;

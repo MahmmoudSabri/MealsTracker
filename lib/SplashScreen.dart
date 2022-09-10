@@ -1,10 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:meals_tracker/APPLIC.dart';
+import 'package:meals_tracker/sql_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'AppTheme.dart';
 import 'package:flutter/material.dart';
 
+import 'GoogleSignIn.dart';
 import 'HomePage.dart';
+import 'SysUser.dart';
 // import 'package:http/http.dart' as http;
 
 class SplashScreen extends StatefulWidget{
@@ -19,13 +27,52 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
 
     super.initState();
+    getUser ();
     Timer(Duration(seconds: 3),
-            ()=>Navigator.pushReplacement(context,
+            () async {
+      if(APPLIC.user!=null)
+        {
+          final List<Map<String, dynamic>> data = await SQLHelper.getMealNotSynced();
+          //print(data);
+          if(data.length>0)
+          for(int index=0;index<data.length;index++)
+            {
+              try {
+                CollectionReference mealsFS = FirebaseFirestore.instance.collection('meals');
+
+                final result = await InternetAddress.lookup('google.com');
+                // print(result);
+                if (result.isNotEmpty && result[0].rawAddress.isNotEmpty)
+                  await mealsFS.add({
+                    'name': data[index]['name'],
+                    'calories': data[index]['calories'],
+                    'id': '1' ,
+                    'createdAt':data[index]['createdAt'],
+                    'user_id':APPLIC.user?.email
+                  })  .then((value)  => SQLHelper.updateMeal(data[index]['id'],data[index]['name'],data[index]['calories'],'Y'))//print("Meal Added"))
+                      .catchError((error) => print("Failed to add Meal: $error"));
+              } catch (_) {
+                print("throwing new error");
+                //throw Exception("Error on server");
+              }
+            }
+          //
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder:
+                  (context) =>
+                  MyHomePage(title: "",)
+              )
+          );
+        }
+
+      else
+        Navigator.pushReplacement(context,
             MaterialPageRoute(builder:
                 (context) =>
-                    MyHomePage(title: "",)
+                    GoogleSignIn()
             )
-        )
+        );
+    }
     );
   }
   @override
@@ -79,5 +126,20 @@ class _SplashScreenState extends State<SplashScreen> {
         ),
       ),
     );
+  }
+  getUser () async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? username = prefs.getString("username");
+    String? email = prefs.getString("email");
+    String? uid = prefs.getString("uid");
+    if(username!=null&&username!='')
+      {
+        APPLIC.user=new SysUser();
+        APPLIC.user?.userName=username;
+        APPLIC.user?.email=email;
+        APPLIC.user?.uid=uid;
+      }
+
   }
 }

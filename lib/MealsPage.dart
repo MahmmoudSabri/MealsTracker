@@ -1,4 +1,7 @@
 
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'APPLIC.dart';
 import 'AppTheme.dart';
@@ -15,11 +18,13 @@ class MealsPage extends StatefulWidget {
 
 class _MealsPageState extends State<MealsPage> {
   List<Map<String, dynamic>> _myMeal = [];
+  CollectionReference mealsFS = FirebaseFirestore.instance.collection('meals');
 
   bool _isLoading = true;
   // This function is used to fetch all data from the database
   void _refreshMeals() async {
     final data = await SQLHelper.getMeals(APPLIC.now,DateTime(APPLIC.now.year, APPLIC.now.month , APPLIC.now.day+ 1));
+   //print(data);
     setState(() {
       _myMeal = data;
       _isLoading = false;
@@ -112,15 +117,35 @@ class _MealsPageState extends State<MealsPage> {
 
 // Insert a new Meals to the database
   Future<void> _addMeal() async {
+
+    bool _addToFirestore=false;
+    if(APPLIC.user!=null)
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      // print(result);
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty)
+      await mealsFS.add({
+        'name': _nameController.text,
+        'calories': _caloriesController.text,
+        'id': '1' ,
+        'createdAt':Timestamp.now(),
+        'user_id':APPLIC.user?.email
+      })  .then((value) => _addToFirestore=true)//print("Meal Added"))
+          .catchError((error) => print("Failed to add Meal: $error"));
+    } catch (_) {
+    print("throwing new error");
+    //throw Exception("Error on server");
+    }
     await SQLHelper.createMeal(
-        _nameController.text, int.parse(_caloriesController.text));
+        _nameController.text, int.parse(_caloriesController.text),_addToFirestore?'Y':'N');
+
     _refreshMeals();
   }
 
   // Update an existing Meals
   Future<void> _updateMeal(int id) async {
     await SQLHelper.updateMeal(
-        id, _nameController.text, int.parse(_caloriesController.text));
+        id, _nameController.text, int.parse(_caloriesController.text),'Y');
     _refreshMeals();
   }
 

@@ -46,7 +46,7 @@ class _WaterPageState extends State<WaterPage> {
 
 // Insert a new WaterCup to the database
   Future<void> _addWaterCup() async {
-    await SQLHelper.createWater(1);
+    await SQLHelper.createWater(1,'N');
     _refreshWaterCup();
   }
   

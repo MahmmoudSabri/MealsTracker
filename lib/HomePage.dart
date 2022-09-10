@@ -2,11 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:meals_tracker/GoogleSignIn.dart';
 import 'package:meals_tracker/WaterPage.dart';
 // import 'package:http/http.dart' as http;
 import 'APPLIC.dart';
 import 'BottomBarView.dart';
 import 'MealsPage.dart';
+import 'Profile.dart';
 import 'TabIconData.dart';
 import 'sql_helper.dart';
 
@@ -479,8 +481,10 @@ class _MyHomePageState extends State<MyHomePage> {
             _pageIndex=index;
             if (index == 0) {
               setState(() {
+                _refreshData();
                 tabBody = Container();
               });
+
             }
             if (index == 1) {
               setState(() {
@@ -492,17 +496,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 tabBody = WaterPage();
               });
             }
-            // else if (index == 1 || index == 3) {
-            //   animationController?.reverse().then<dynamic>((data) {
-            //     if (!mounted) {
-            //       return;
-            //     }
-            //     setState(() {
-            //       tabBody =
-            //           TrainingScreen(animationController: animationController);
-            //     });
-            //   });
-            // }
+
+            if (index == 3) {
+              if(APPLIC.user!=null)
+                {
+                  Navigator.pushReplacement(
+                      context, MaterialPageRoute(builder: (context) => ProfilePage()));
+                }
+              else
+              Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (context) => GoogleSignIn()));
+            }
           },
         ),
       ],

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "675719647559",
+    "project_id": "mealstracker-af8bb",
+    "storage_bucket": "mealstracker-af8bb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:675719647559:android:2f37eb7baec9de3cb8fc62",
+        "android_client_info": {
+          "package_name": "com.mealstracker.meals_tracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "675719647559-t2se0pusc5e3hdoptkrnc2otbrqrc9sb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mealstracker.meals_tracker",
+            "certificate_hash": "602e2937233516f51673ed85f9858d7231b88087"
+          }
+        },
+        {
+          "client_id": "675719647559-s68aa0dpa1k3akrm69rl0v3ondc42eft.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRfp0zx2y4F-7_sszy8uPwYFB94bEE7ug"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "675719647559-s68aa0dpa1k3akrm69rl0v3ondc42eft.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
